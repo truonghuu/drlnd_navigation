@@ -43,7 +43,7 @@ With Deep Q-Learning, a deep neural network is used to approximate the Q-functio
 
 The neural network architecture used for this project can be found [here](https://github.com/truonghuu/drlnd_navigation/blob/master/model.py) in the `model.py` file of the source code. The network contains three fully connected layers with 64, 64, and 4 nodes, respectively.
 
-The input layer has 37 nodes, which is the size of a state. We employ experience replay approach to feed in the deep neural network a number of past experience (i.e., batch).
+The input layer has 37 nodes, which is the size of a state. We employ the experience replay approach to feed in the deep neural network a number of past experience (i.e., batch).
 
 #### Experience Replay
 
