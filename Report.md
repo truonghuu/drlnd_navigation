@@ -29,7 +29,8 @@ The main component of Q-Learning algorithm is the `Q-table` where each element `
 At the begining of learning, `Q-table` is initialized as a zero matrix, as the agent has not interacted with the environment. The values in `Q-table` will be updated in each learning episode using the updating function as defined below.
 
 <img src="https://github.com/truonghuu/drlnd_navigation/blob/master/figures/q_function.png" width="70%" align="top-left" alt="" title="q_function.png" />
-Bellman Equation ([Source](https://towardsdatascience.com/a-beginners-guide-to-q-learning-c3e2a30a653c))
+Bellman Equation [Source](https://towardsdatascience.com/a-beginners-guide-to-q-learning-c3e2a30a653c)
+
 
 In this function, learning rate (alpha) defines how much we accept the new value vs the old value. Discount factor (gamma) is used to balance the immediate and future reward. `R(s,a)` is the reward that the agent receives when taking an action at a certain state. 
  
@@ -65,11 +66,11 @@ In all experiments, epsilon of the greedy algorithm for choosing action is set t
  
 It is observed that the agent achieves an average score of +13 over 100 consecutive episodes after a total of 315 episodes of training where the first 100 episodes are considered as ram up period. The figure below shows the evolution of average score with respect to number of episodes run. The weights of the deep learning model of the trained agent is stored in the file `model.pt`.
 
-<img src="https://github.com/truonghuu/drlnd_navigation/blob/master/figures/score_evolution.png" width="70%" align="top-left" alt="" title="Experiment Results" />
+<img src="https://github.com/truonghuu/drlnd_navigation/blob/master/figures/score_evolution.png" width="50%" align="top-left" alt="" title="Experiment Results" />
 
 The trained agent is tested with 15 episodes. The below figure presents the score achieved by the agent at each episode. We can observe that the trained agent achieves an average score over the testing episodes higher than 13 when the environment reaches the terminate state. The figure also shows that for certain episodes, the agent fails to achieve the expected score, e.g., episode 4, 6, 9, 15, which raises the need for improvement techniques to train the agent and stabilize its performance.
 
-<img src="https://github.com/truonghuu/drlnd_navigation/blob/master/figures/test_agent.png" width="70%" align="top-left" alt="" title="Experiment Results" />   
+<img src="https://github.com/truonghuu/drlnd_navigation/blob/master/figures/test_agent.png" width="50%" align="top-left" alt="" title="Experiment Results" />   
 
 
 ### Future Direction
