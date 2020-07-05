@@ -24,12 +24,12 @@ The task is episodic, and in order to solve the environment, the agent must get 
 
 It has been shown in `Navigation.ipynb` that using an agent which takes action randomly does not solve the problem. A more intelligent agent is therefore needed to achieve an average score of +13 over 100 consecutive episodes. We employ Q-Learning that aims at finding an optimal policy, i.e., a policy that maximizes the scores of the agent.   
 
-The main component of Q-Learning is the `Q-table` where each element `Q(s,a)` is the maximum expected future score for a pair of state `s` and action `a`. In other words, given the initial state `s`, `Q(s,a)` is the maximum expected future score if the agent take action `a`. 
+The main component of Q-Learning algorithm is the `Q-table` where each element `Q(s,a)` is the maximum expected future reward for a pair of state `s` and action `a`. In other words, given the initial state `s`, `Q(s,a)` is the maximum expected future reward if the agent takes action `a`. 
 
 At the begining of learning, `Q-table` is initialized as a zero matrix, as the agent has not interacted with the environment. The values in `Q-table` will be updated in each learning episode using the updating function as defined below.
 
 <img src="https://github.com/truonghuu/drlnd_navigation/blob/master/figures/q_function.png" width="50%" align="top-left" alt="" title="q_function.png" />
-Q-Function: [Source](https://towardsdatascience.com/a-beginners-guide-to-q-learning-c3e2a30a653c)
+Q-Function ([Source](https://towardsdatascience.com/a-beginners-guide-to-q-learning-c3e2a30a653c))
 
 In this function, learning rate (alpha) defines how much we accept the new value vs the old value. Discount factor (gamma) is used to balance the immediate and future reward. `R(s,a)` is the reward that the agent receives when taking an action at a certain state. 
  
@@ -44,12 +44,12 @@ The logic of 𝛆-greedy algorithm is implemented as part of the `agent.act()` m
 
 #### Deep Q-Network (DQN)
 
-For most problems, it is impractical to represent Q-Function as a table that contains values for each pair of state and action. On one hand, it is because of the large number of states and actions of the problems. On the other hand, most of problems have continuous values for environment states. To overcome this problem, we train a neural network with parameter w to estimate Q-values, i.e., `F(s,a,w) ≈ Q(s,a)`. 
+For most problems, it is impractical to represent Q-Function as a table that contains values for each pair of state and action. On one hand, it is because of the large number of states and actions of the problems. On the other hand, most of problems have continuous values for environment states. To overcome this problem, we train a neural network with parameter w to estimate Q-values, i.e., `F(s,a,w) ≈ Q(s,a)`. This is basiscally a regression problem in which the input is the state of the environment and output is the estimated Q-values. The loss function of the training is defined as mean squared error of the estimated Q-value and the target Q-value, which is defined as `R(s,a) + gamma * max Q'(s', a')`. By minimizing the loss function, we train the model to converge to the maximum expected reward.
 
+In actual implementation, we use 2 neural networks for learning: one is for the prediction network and one for the target network. The target network has the same architecture as the prediction network but with paramters updated less frequently compared to the prediction one. In other words, after every K training iterations (K is a hyperparameter), the parameters of the prediction network are copied to the target network.
+   
+The neural network architecture used for this project can be found [here](https://github.com/truonghuu/drlnd_navigation/blob/master/model.py) in the `model.py` file of the source code. It is a fully-connected neural network that contains an input layer of 37 nodes, 2 hidden layers with 64 nodes each and an output  with 4 nodes, corresponding to 4 actions.
 
-The neural network architecture used for this project can be found [here](https://github.com/truonghuu/drlnd_navigation/blob/master/model.py) in the `model.py` file of the source code. The network contains three fully connected layers with 64, 64, and 4 nodes, respectively.
-
-The input layer has 37 nodes, which is the size of a state. We employ the experience replay approach to feed in the deep neural network a number of past experience (i.e., batch).
 
 #### Experience Replay
 
