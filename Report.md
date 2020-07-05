@@ -28,8 +28,8 @@ The main component of Q-Learning algorithm is the `Q-table` where each element `
 
 At the begining of learning, `Q-table` is initialized as a zero matrix, as the agent has not interacted with the environment. The values in `Q-table` will be updated in each learning episode using the updating function as defined below.
 
-<img src="https://github.com/truonghuu/drlnd_navigation/blob/master/figures/q_function.png" width="50%" align="top-left" alt="" title="q_function.png" />
-Q-Function ([Source](https://towardsdatascience.com/a-beginners-guide-to-q-learning-c3e2a30a653c))
+<img src="https://github.com/truonghuu/drlnd_navigation/blob/master/figures/q_function.png" width="70%" align="top-left" alt="" title="q_function.png" />
+Bellman Equation ([Source](https://towardsdatascience.com/a-beginners-guide-to-q-learning-c3e2a30a653c))
 
 In this function, learning rate (alpha) defines how much we accept the new value vs the old value. Discount factor (gamma) is used to balance the immediate and future reward. `R(s,a)` is the reward that the agent receives when taking an action at a certain state. 
  
@@ -46,28 +46,31 @@ The logic of 𝛆-greedy algorithm is implemented as part of the `agent.act()` m
 
 For most problems, it is impractical to represent Q-Function as a table that contains values for each pair of state and action. On one hand, it is because of the large number of states and actions of the problems. On the other hand, most of problems have continuous values for environment states. To overcome this problem, we train a neural network with parameter w to estimate Q-values, i.e., `F(s,a,w) ≈ Q(s,a)`. This is basiscally a regression problem in which the input is the state of the environment and output is the estimated Q-values. The loss function of the training is defined as mean squared error of the estimated Q-value and the target Q-value, which is defined as `R(s,a) + gamma * max Q'(s', a')`. By minimizing the loss function, we train the model to converge to the maximum expected reward.
 
-In actual implementation, we use 2 neural networks for learning: one is for the prediction network and one for the target network. The target network has the same architecture as the prediction network but with paramters updated less frequently compared to the prediction one. In other words, after every K training iterations (K is a hyperparameter), the parameters of the prediction network are copied to the target network.
+In actual implementation, we use 2 neural networks for learning: one is for the prediction network and the other for the target network. The target network has the same architecture as the prediction network but with paramters updated less frequently compared to the prediction one. In other words, after every K steps (K is a hyperparameter), the parameters of the prediction network are copied to the target network. We also define a parameter `τ` that indicates how much the target network will be updated from the parameters of the prediction network, i.e., `θ_target = τ*θ_prediction + (1 - τ)*θ_target` where `θ` is a parameter of the networks. 
    
 The neural network architecture used for this project can be found [here](https://github.com/truonghuu/drlnd_navigation/blob/master/model.py) in the `model.py` file of the source code. It is a fully-connected neural network that contains an input layer of 37 nodes, 2 hidden layers with 64 nodes each and an output  with 4 nodes, corresponding to 4 actions.
 
 
 #### Experience Replay
 
-However, unlike supervised learning where input data is independent and identically distributed, in reinforcement learning, the input and target change over time. In other words, we train an agent to estimate the Q-values but the Q-values are changing as the agent knows the environment better.
+While training a neural network using stochastic gradient descent works best with independent and identically distributed (i.i.d) data, in reinforcement learning, as the agent takes an action at one state and moves to another state, there would be a strong temporal/chronological correlation among state/action pairs in each training episode. This leads to instability (oscillation or divergence of Q-Values) during training as small updates to Q-values may significantly change the policy.   
 
-Experience replay allows the agent to learn from past experience.
+To overcome this issue, we use a biologically-inspired technique namely experience replay. By maintaining a memory that stores a collection of experience tuples (state, action, reward, and next state), at every learning step, we randomly samples from this memory a number of tuples (i.e., a batch) and feed in the neural networks (prediction and target networks). Experience tuples are sampled randomly from a large collection, the correlation among samples would be low. This technique also allows the agent to learn from past experience rather than just most recent actions.
 
-Each experience is stored in a replay buffer as the agent interacts with the environment. The replay buffer contains a collection of experience tuples with the state, action, reward, and next state `(s, a, r, s')`. The agent then samples from this buffer as part of the learning step. Experiences are sampled randomly, so that the data is uncorrelated. This prevents action values from oscillating or diverging catastrophically, since a naive Q-learning algorithm could otherwise become biased by correlations between sequential experience tuples.
-
-Also, experience replay improves learning through repetition. By doing multiple passes over the data, our agent has multiple opportunities to learn from a single experience tuple. This is particularly useful for state-action pairs that occur infrequently within the environment.
-
-The implementation of the replay buffer can be found [here](https://github.com/truonghuu/drlnd_navigation/blob/master/dqn_agent.py) in the `dqn_agent.py` file of the source code.
+The implementation of the experience replay  can be found [here](https://github.com/truonghuu/drlnd_navigation/blob/master/dqn_agent.py) in the `dqn_agent.py` file of the source code.
 
 ### Results
 
-Through different runs, it is observed that the agent achieves an average score of +13 over 100 consecutive episodes after a total of 327 episodes of training where the first 100 episodes are consider as ram up period. The figure below shows the evolution of average score with respect to number of episodes run.
+In all experiments, epsilon of the greedy algorithm for choosing action is set to 1 at the beginning. After each training episode, it is reduced by a decay factor of 0.98. The lowest epsilon value is 0.02. For each training episode, the maximum number of steps is set to 1000, i.e., the episode is considered as solved after reaching 1000 steps even though the environment has not reach the terminate state. The maximum number of experience tuples stored in the memory is set to 100000. The batch size for randomly sampling from the memory is set to 64. 
+ 
+It is observed that the agent achieves an average score of +13 over 100 consecutive episodes after a total of 315 episodes of training where the first 100 episodes are considered as ram up period. The figure below shows the evolution of average score with respect to number of episodes run. The weights of the deep learning model of the trained agent is stored in the file `model.pt`.
 
-<img src="https://github.com/truonghuu/drlnd_navigation/blob/master/figures/score_evolution.png" width="50%" align="top-left" alt="" title="Experiment Results" />
+<img src="https://github.com/truonghuu/drlnd_navigation/blob/master/figures/score_evolution.png" width="70%" align="top-left" alt="" title="Experiment Results" />
+
+The trained agent is tested with 15 episodes. The below figure presents the score achieved by the agent at each episode. We can observe that the trained agent achieves an average score over the testing episodes higher than 13 when the environment reaches the terminate state. The figure also shows that for certain episodes, the agent fails to achieve the expected score, e.g., episode 4, 6, 9, 15, which raises the need for improvement techniques to train the agent and stabilize its performance.
+
+<img src="https://github.com/truonghuu/drlnd_navigation/blob/master/figures/test_agent.png" width="70%" align="top-left" alt="" title="Experiment Results" />   
+
 
 ### Future Direction
 
