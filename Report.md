@@ -20,32 +20,40 @@ The state space has 37 dimensions and contains the agent's velocity, along with 
 
 The task is episodic, and in order to solve the environment, the agent must get an average score of +13 over 100 consecutive episodes.
 
-### Implementation of Learning Algorithm
+### Implementation of Q-Learning Algorithm
 
 It has been shown in `Navigation.ipynb` that using an agent which takes action randomly does not solve the problem. A more intelligent agent is therefore needed to achieve an average score of +13 over 100 consecutive episodes. We employ Q-Learning that aims at finding an optimal policy, i.e., a policy that maximizes the scores of the agent.   
 
-The main component of Q-Learning is the Q-Function that calculates the expected reward `R` for all possible actions `A` in all possible states `S` (i.e., `Q: A x S --> R`). Based on Q-Function, we can then define the optimal policy `π*` as the action that maximizes the Q-function for a given state across all possible states. The optimal Q-function `Q*(s,a)` maximizes the total expected reward for an agent starting in state `s` and choosing action `a`, then following the optimal policy for each subsequent state.
+The main component of Q-Learning is the `Q-table` where each element `Q(s,a)` is the maximum expected future score for a pair of state `s` and action `a`. In other words, given the initial state `s`, `Q(s,a)` is the maximum expected future score if the agent take action `a`. 
 
-#### Epsilon Greedy Algorithm
+At the begining of learning, `Q-table` is initialized as a zero matrix, as the agent has not interacted with the environment. The values in `Q-table` will be updated in each learning episode using the updating function as defined below.
 
-One challenge with the Q-function above is choosing which action to take while the agent is still learning the optimal policy. Should the agent choose an action based on the Q-values observed thus far? Or, should the agent try a new action in hopes of earning a higher reward? This is known as the **exploration vs. exploitation dilemma**.
+<img src="https://github.com/truonghuu/drlnd_navigation/blob/master/figures/q_function.png" width="50%" align="top-left" alt="" title="q_function.png" />
+Q-Function: [Source](https://towardsdatascience.com/a-beginners-guide-to-q-learning-c3e2a30a653c)
 
-To address this, we employ an **𝛆-greedy algorithm**. This algorithm allows the agent to systematically manage the exploration vs. exploitation trade-off. The agent "explores" by picking a random action with some probability epsilon `𝛜`. However, the agent continues to "exploit" its knowledge of the environment by choosing actions based on the policy with probability (1-𝛜).
+In this function, learning rate (alpha) defines how much we accept the new value vs the old value. Discount factor (gamma) is used to balance the immediate and future reward. `R(s,a)` is the reward that the agent receives when taking an action at a certain state. 
+ 
+#### Epsilon-greedy Algorithm
 
-Furthermore, the value of epsilon is purposely decayed over time, so that the agent favors exploration during its initial interactions with the environment, but increasingly favors exploitation as it gains more experience. The starting and ending values for epsilon, and the rate at which it decays are three hyperparameters that are later tuned during experimentation.
+At the beginning, the agent randomly chooses actions since it does not know anything about the environment. As it interacts with the environment, it learns some actions that maximize its expected rewards. Thus, it is reasonably that the agent will keep choosing the same action for a state as that action maximizes its expected reward. However, the agent could fall into a local optimum that prevents it from exploring other actions that might result in a higher expected reward. 
+
+To address this problem, we employ an **𝛆-greedy algorithm**. At every state of the environment, the agent takes a random action with some probability epsilon `𝛜` and takes the action that maximizes the expected reward with probability (1-𝛜). To allow the agent to explore the environment at the beginning and exploit its experience when it is more confident, the value of epsilon is gradually reduced over time.
 
 The logic of 𝛆-greedy algorithm is implemented as part of the `agent.act()` method [here](https://github.com/truonghuu/drlnd_navigation/blob/master/dqn_agent.py) in `dqn_agent.py` of the source code.
 
 
 #### Deep Q-Network (DQN)
 
-With Deep Q-Learning, a deep neural network is used to approximate the Q-function. Given a network `F`, finding an optimal policy is a matter of finding the best weights `w` such that `F(s,a,w) ≈ Q(s,a)`.
+For most problems, it is impractical to represent Q-Function as a table that contains values for each pair of state and action. On one hand, it is because of the large number of states and actions of the problems. On the other hand, most of problems have continuous values for environment states. To overcome this problem, we train a neural network with parameter w to estimate Q-values, i.e., `F(s,a,w) ≈ Q(s,a)`. 
+
 
 The neural network architecture used for this project can be found [here](https://github.com/truonghuu/drlnd_navigation/blob/master/model.py) in the `model.py` file of the source code. The network contains three fully connected layers with 64, 64, and 4 nodes, respectively.
 
 The input layer has 37 nodes, which is the size of a state. We employ the experience replay approach to feed in the deep neural network a number of past experience (i.e., batch).
 
 #### Experience Replay
+
+However, unlike supervised learning where input data is independent and identically distributed, in reinforcement learning, the input and target change over time. In other words, we train an agent to estimate the Q-values but the Q-values are changing as the agent knows the environment better.
 
 Experience replay allows the agent to learn from past experience.
 
@@ -59,7 +67,7 @@ The implementation of the replay buffer can be found [here](https://github.com/t
 
 Through different runs, it is observed that the agent achieves an average score of +13 over 100 consecutive episodes after a total of 327 episodes of training where the first 100 episodes are consider as ram up period. The figure below shows the evolution of average score with respect to number of episodes run.
 
-<img src="https://github.com/truonghuu/drlnd_navigation/blob/master/score_evolution.png" width="50%" align="top-left" alt="" title="Experiment Results" />
+<img src="https://github.com/truonghuu/drlnd_navigation/blob/master/figures/score_evolution.png" width="50%" align="top-left" alt="" title="Experiment Results" />
 
 ### Future Direction
 
